@@ -15,17 +15,8 @@ import java.util.UUID;
 public class OrderDTO {
     private List<UUID> products;
     private String orderType;
-    /*
-    На случай, ЕСЛИ ПОКУПАТЕЛЬ указывает другой адрес доставки или номер телефона при заказе,
-    или если не хочет сохранять эти данные,
-    тлт если заказ заберет другой человек -
-    все эти данные хранятся в поле экстра
-    */
     private String surname;
     private String name;
-    private String secondName;
     private String address;
     private String phoneNumber;
-    private boolean changeData;
-    private boolean saveData;
 }

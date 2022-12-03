@@ -43,9 +43,8 @@ public class NewCartService {
         return newCartRepository.save(newCart);
     }
 
-    public Page<NewCart> getUserCart(HttpServletRequest request) {
-        Pageable pageable = PageRequest.of(0,4, Sort.by(Sort.Direction.ASC, "productId")); // page size and number. need change when pagination on client
-        return newCartRepository.findAllByUserId(userService.findUser(request).get().getId(), pageable);
+    public List<NewCart> getUserCart(HttpServletRequest request) {
+        return newCartRepository.findAllByUserId(userService.findUser(request).get().getId());
     }
 
     public Optional<Boolean> deleteProductFromCart(UUID productId, HttpServletRequest request) {
@@ -111,6 +110,15 @@ public class NewCartService {
         for (int i = 0; i < list.size(); i++) {
             newCartRepository.deleteByProductIdAndUserId(UUID.fromString(list.get(i)), userService.findUser(request).get().getId());
         }
+    }
+
+    public List<UUID> findUserProducts(HttpServletRequest request) {
+        List<NewCart> cart = newCartRepository.findAllByUserId(userService.findUser(request).get().getId());
+        List<UUID> products = new ArrayList<>();
+        for (NewCart newCart : cart) {
+            products.add(newCart.getProductId());
+        }
+        return products;
     }
 
     public void deleteProductFromUserCart(UUID productId) {

@@ -29,7 +29,6 @@ public class UserService {
                 .map(e -> {
                     e.setName(userDTO.getName());
                     e.setSurname(userDTO.getSurname());
-                    e.setSecondName(userDTO.getSecondName());
                     e.setAddress(userDTO.getAddress());
                     e.setPhoneNumber(userDTO.getPhoneNumber());
                     return userRepository.save(e);

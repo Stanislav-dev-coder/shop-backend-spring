@@ -30,10 +30,10 @@ public class CommentsService {
         this.userService = userService;
     }
 
-    public Page<Comments> findAllComment(UUID productId){
-        Pageable pageable = PageRequest.of(0,4); // ne zabit pomenat
-        var result = commentsRepository.findAllByProductId(productId, pageable);
-        return result;
+    public List<Comments> findAllComment(UUID productId){
+//        Pageable pageable = PageRequest.of(0,4); // ne zabit pomenat
+//        var result = commentsRepository.findAllByProductId(productId, pageable);
+        return commentsRepository.findAllByProductId(productId);
     }
 
     public Comments saveComment(UUID productUUID, Comments comment, HttpServletRequest request){

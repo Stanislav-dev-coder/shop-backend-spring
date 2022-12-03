@@ -45,7 +45,7 @@ public class NewOrderController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Page<NewOrder>> getOrders(HttpServletRequest request) {
+    public ResponseEntity<List<NewOrder>> getOrders(HttpServletRequest request) {
         return ResponseEntity.ok(newOrderService.getOrders(request));
     }
 

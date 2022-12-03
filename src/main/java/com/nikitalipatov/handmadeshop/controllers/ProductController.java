@@ -79,12 +79,12 @@ public class ProductController {
         return ResponseEntity.ok(catalogEntityList);
     }
 
-//    @GetMapping("/popular")
-//    public ResponseEntity<List<Product>> getPopularProducts() {
-//        List<Product> popularProducts = productService.getPopularProducts();
-//        return ResponseEntity.ok(popularProducts);
-//    }
-//
+    @GetMapping("/popular")
+    public ResponseEntity<List<Product>> getPopularProducts() {
+        List<Product> popularProducts = productService.getPopularProducts();
+        return ResponseEntity.ok(popularProducts);
+    }
+
     @GetMapping("/new")
     public ResponseEntity<List<Product>> getNewProducts() {
         List<Product> newProducts = productService.getNewProducts();

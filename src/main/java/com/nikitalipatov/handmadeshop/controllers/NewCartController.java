@@ -41,8 +41,14 @@ public class NewCartController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Page<NewCart>> getUserCart(HttpServletRequest request) {
-        Page<NewCart> result = newCartService.getUserCart(request);
+    public ResponseEntity<List<NewCart>> getUserCart(HttpServletRequest request) {
+        List<NewCart> result = newCartService.getUserCart(request);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<UUID>> getUserProducts(HttpServletRequest request) {
+        List<UUID> result = newCartService.findUserProducts(request);
         return ResponseEntity.ok(result);
     }
 

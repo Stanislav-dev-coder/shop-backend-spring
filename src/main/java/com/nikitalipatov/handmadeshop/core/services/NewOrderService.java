@@ -61,10 +61,10 @@ public class NewOrderService {
         newOrder.setSummary((Double) newCartService.cartSummaryForOrders(orderDTO.getProducts(), request).get(3)); // 3 - price with discount
         newOrder.setDate(LocalDateTime.now());
         newOrder.setOrderStatus("В обработке");
-        newOrder.setOrderType(orderDTO.getOrderType());
-        if (orderDTO.isSaveData()) {
-            UserDTO userDTO = new UserDTO(orderDTO.getSurname(), orderDTO.getName(), orderDTO.getSecondName(), orderDTO.getPhoneNumber(), orderDTO.getAddress());
-            userService.modifyUser(request, userDTO);
+        if (orderDTO.getOrderType().equals("Доставка")) {
+            newOrder.setOrderType(orderDTO.getOrderType() + " " + orderDTO.getAddress());
+        } else {
+            newOrder.setOrderType(orderDTO.getOrderType());
         }
         productService.modifyProductAmount(userCart);
         for (int i = 0; i < orderDTO.getProducts().size(); i++) {
@@ -73,9 +73,9 @@ public class NewOrderService {
         return newOrderRepository.save(newOrder);
     }
 
-    public Page<NewOrder> getOrders(HttpServletRequest request) {
-        Pageable pageable = PageRequest.of(0,4, Sort.by("date")); // не забыть передавать номера страниц
-        return newOrderRepository.findAllByUserId(userService.findUser(request).get().getId(), pageable);
+    public List<NewOrder> getOrders(HttpServletRequest request) {
+        //Pageable pageable = PageRequest.of(0,4, Sort.by("date")); // не забыть передавать номера страниц
+        return newOrderRepository.findAllByUserId(userService.findUser(request).get().getId());
     }
 
     public Optional<NewOrder> modifyOrderStatus(OrderStatusDTO orderStatusDTO) {

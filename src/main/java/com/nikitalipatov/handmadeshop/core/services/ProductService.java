@@ -1,11 +1,9 @@
 package com.nikitalipatov.handmadeshop.core.services;
 
-import com.nikitalipatov.handmadeshop.core.models.FileDB;
-import com.nikitalipatov.handmadeshop.core.models.NewCart;
-import com.nikitalipatov.handmadeshop.core.models.Sale;
+import com.nikitalipatov.handmadeshop.core.models.*;
+import com.nikitalipatov.handmadeshop.core.repositories.CommentsRepository;
 import com.nikitalipatov.handmadeshop.core.repositories.NewCartRepository;
 import com.nikitalipatov.handmadeshop.core.repositories.ProductRepository;
-import com.nikitalipatov.handmadeshop.core.models.Product;
 import com.nikitalipatov.handmadeshop.dto.ProductEditingDTO;
 import com.nikitalipatov.handmadeshop.dto.ProductCreationDTO;
 import com.nikitalipatov.handmadeshop.dto.ProductFilterDTO;
@@ -31,16 +29,19 @@ public class ProductService {
     private final NewCartRepository newCartRepository;
     private final FileStorageService fileStorageService;
     private final CategoryService categoryService;
+    private final CommentsRepository commentsRepository;
 
     @Autowired
     public ProductService(ProductRepository productRepository,
                           NewCartRepository newCartRepository,
                           CategoryService categoryService,
-                          FileStorageService fileStorageService) {
+                          FileStorageService fileStorageService,
+                          CommentsRepository commentsRepository) {
         this.productRepository = productRepository;
         this.newCartRepository = newCartRepository;
         this.categoryService = categoryService;
         this.fileStorageService = fileStorageService;
+        this.commentsRepository = commentsRepository;
     }
 
     public Product save(ProductCreationDTO productCreationDTO) throws IOException {
@@ -75,12 +76,14 @@ public class ProductService {
         return result;
     }
 
+    public List<Product> getPopularProducts() {
+        return productRepository.findTop4ByRatingGreaterThanEqual(4.0);
+//        for (int i = 0; i < products.size() - 2; i++) {
+//            products.remove(i);
+//        }
+//        return pr.subList(pr.size() - 4, pr.size());
+    }
 
-
-//    public List<Product> getPopularProducts() {
-//        return productRepository.findAllByRatingGreaterThanEqualOrderByReviewsDesc(4.0);
-//    }
-//
     public List<Product> getNewProducts() {
         List<Product> pr = productRepository.findAll();
         pr.subList(pr.size() - 4, pr.size());
@@ -99,6 +102,7 @@ public class ProductService {
 
     public Optional<Product> editCatalog(UUID uuid, ProductCreationDTO productCreationDTO) {
         Optional<Product> result = productRepository.findById(uuid);
+        double salePercent = (result.get().getPrice() - result.get().getDiscountPrice()) * 100 / result.get().getPrice();
         return result
                 .map(entity -> {
                     entity.setName(productCreationDTO.getName());
@@ -106,7 +110,11 @@ public class ProductService {
                     entity.setPrice(productCreationDTO.getPrice());
                     entity.setAmount(productCreationDTO.getAmount());
                     entity.setCategory(productCreationDTO.getCategory());
-                    entity.setDiscountPrice(0.0);
+                    if (result.get().getSale().equals("Товар не участвует в акции")) {
+                        entity.setDiscountPrice(0.0);
+                    } else {
+                        entity.setDiscountPrice(productCreationDTO.getPrice() - (productCreationDTO.getPrice() / 100 * salePercent));
+                    }
                     if(productCreationDTO.getImage() != null) {
                         try {
                             FileDB image = fileStorageService.store(productCreationDTO.getImage());
@@ -153,5 +161,17 @@ public class ProductService {
             result.get().setAmount(newAmount);
             productRepository.save(result.get());
         }
+    }
+
+    public void calculateRating(UUID id) {
+        List<Comments> comments = commentsRepository.findAllByProductId(id);
+        double commentsKol = comments.size();
+        double commentsTotalRating = 0;
+        for (Comments comment : comments) {
+            commentsTotalRating = commentsTotalRating + comment.getRating();
+        }
+        Optional<Product> product = productRepository.findById(id);
+        product.get().setRating(commentsTotalRating / commentsKol);
+        productRepository.save(product.get());
     }
 }

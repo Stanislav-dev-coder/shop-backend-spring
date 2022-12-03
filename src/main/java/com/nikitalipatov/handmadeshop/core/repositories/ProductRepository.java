@@ -18,6 +18,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     List<Product> findAllByNameIsLike(String name);
     List<Product> findAllByIdIn(List<UUID> productIds);
     List<Product> findAllBySale(String sale);
-    List<Product> findAllByRatingGreaterThanEqual(double rating);
+    List<Product> findTop4ByRatingGreaterThanEqual(double rating);
     List<Product> findLast4ByRatingGreaterThanEqual(double rating);
 }

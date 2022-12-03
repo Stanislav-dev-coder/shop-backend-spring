@@ -2,6 +2,7 @@ package com.nikitalipatov.handmadeshop.controllers;
 
 import com.nikitalipatov.handmadeshop.core.models.Comments;
 import com.nikitalipatov.handmadeshop.core.services.CommentsService;
+import com.nikitalipatov.handmadeshop.core.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,14 +25,16 @@ import java.util.UUID;
 @RequestMapping(value = "/newcomments")
 public class CommentsController {
         private final CommentsService commentsService;
+        private final ProductService productService;
 
         @Autowired
-        public CommentsController(CommentsService commentsService) {
+        public CommentsController(CommentsService commentsService, ProductService productService) {
                 this.commentsService = commentsService;
+                this.productService = productService;
         }
 
         @GetMapping("/{id}")
-        public ResponseEntity<Page<Comments>> findAllComment(@PathVariable("id") UUID productId){
+        public ResponseEntity<List<Comments>> findAllComment(@PathVariable("id") UUID productId){
                 var result = commentsService.findAllComment(productId);
                 return ResponseEntity.ok(result);
         }
@@ -38,6 +42,7 @@ public class CommentsController {
         @PostMapping("/{id}")
         public ResponseEntity<Comments> addComment(@PathVariable(name = "id")UUID productId, @RequestBody Comments comment, HttpServletRequest request){
                 Comments createComment = commentsService.saveComment(productId, comment, request);
+                productService.calculateRating(productId);
                 return ResponseEntity.ok(createComment);
         }
 
