@@ -16,4 +16,8 @@ public class ProductFilterDTO {
     private String sortBy = "price";
     private String sortDirection = "ASC";
     private String searchText;
+
+    public ProductFilterDTO(boolean sale) {
+        this.sale = sale;
+    }
 }

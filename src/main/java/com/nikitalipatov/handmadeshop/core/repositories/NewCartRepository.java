@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface NewCartRepository extends JpaRepository<NewCart, UUID> {
+    Page<NewCart> findAllByUserId(Long userId, Pageable pageable);
     List<NewCart> findAllByUserId(Long userId);
     Optional<NewCart> findByProductIdAndUserId(UUID productId, Long userId);
     List<NewCart> findAllByUserIdAndProductIdIn(Long userId, List<UUID> products);

@@ -1,12 +1,10 @@
 package com.nikitalipatov.handmadeshop.controllers;
 
 import com.nikitalipatov.handmadeshop.core.models.NewOrder;
-import com.nikitalipatov.handmadeshop.core.models.OrderStatus;
 import com.nikitalipatov.handmadeshop.core.services.NewOrderService;
 import com.nikitalipatov.handmadeshop.dto.OrderDTO;
 import com.nikitalipatov.handmadeshop.dto.OrderStatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +27,21 @@ public class NewOrderController {
         this.newOrderService = newOrderService;
     }
 
-    @GetMapping("/status")
-    public ResponseEntity<List<OrderStatus>> getOrderStatus() {
-        return ResponseEntity.ok(newOrderService.getOrderStatus());
+
+    @DeleteMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelOrder(@PathVariable(name = "id") UUID id, HttpServletRequest request) {
+        Optional<Boolean> result = newOrderService.cancelOrder(id, request);
+        return result
+                .map(e -> ResponseEntity.noContent().build())
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Optional<NewOrder>> getOrder(@PathVariable(name = "id")UUID id) {
-        return ResponseEntity.ok(newOrderService.getOrder(id));
+    @GetMapping("/confirm/{id}")
+    public ResponseEntity<NewOrder> confirmReceipt(@PathVariable(name = "id") UUID id) {
+        Optional<NewOrder> result = newOrderService.confirmReceipt(id);
+        return result
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/add")
@@ -47,6 +52,11 @@ public class NewOrderController {
     @GetMapping("/get")
     public ResponseEntity<List<NewOrder>> getOrders(HttpServletRequest request) {
         return ResponseEntity.ok(newOrderService.getOrders(request));
+    }
+
+    @GetMapping("/getall")
+    public ResponseEntity<List<NewOrder>> getAllUserOrders() {
+        return ResponseEntity.ok(newOrderService.getAllUserOrders());
     }
 
     @PutMapping("/modify")

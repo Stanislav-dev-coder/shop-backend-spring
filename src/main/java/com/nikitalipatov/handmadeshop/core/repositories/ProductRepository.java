@@ -20,4 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     List<Product> findAllBySale(String sale);
     List<Product> findTop4ByRatingGreaterThanEqual(double rating);
     List<Product> findLast4ByRatingGreaterThanEqual(double rating);
+    <Optional>Product findByName(String name);
 }

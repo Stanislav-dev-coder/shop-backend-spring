@@ -2,23 +2,20 @@ package com.nikitalipatov.handmadeshop.core.services;
 
 import com.nikitalipatov.handmadeshop.core.models.NewCart;
 import com.nikitalipatov.handmadeshop.core.models.NewOrder;
-import com.nikitalipatov.handmadeshop.core.models.OrderStatus;
 import com.nikitalipatov.handmadeshop.core.repositories.NewOrderRepository;
-import com.nikitalipatov.handmadeshop.core.repositories.OrderStatusRepository;
 import com.nikitalipatov.handmadeshop.dto.OrderDTO;
 import com.nikitalipatov.handmadeshop.dto.OrderStatusDTO;
-import com.nikitalipatov.handmadeshop.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.*;
+
+/**
+ * Service class for manipulating <b>orders</b>.
+ * Most useful thing is generating orders for admin and automatically change amount of products in stock
+ */
 
 @Service
 @Transactional
@@ -27,25 +24,20 @@ public class NewOrderService {
     private final UserService userService;
     private final NewCartService newCartService;
     private final NewOrderRepository newOrderRepository;
-    private final OrderStatusRepository orderStatusRepository;
     private final ProductService productService;
 
     @Autowired
-    public NewOrderService(UserService userService, NewCartService newCartService, NewOrderRepository newOrderRepository, OrderStatusRepository orderStatusRepository, ProductService productService) {
+    public NewOrderService(UserService userService, NewCartService newCartService, NewOrderRepository newOrderRepository, ProductService productService) {
         this.userService = userService;
         this.newCartService = newCartService;
         this.newOrderRepository = newOrderRepository;
-        this.orderStatusRepository = orderStatusRepository;
         this.productService = productService;
     }
 
-    public List<OrderStatus> getOrderStatus() {
-        return orderStatusRepository.findAll();
-    }
-
-//    Этот метод необходимо будет перепроверить, когда появится возможность заказывать
-//            ОПРЕДЕЛЕННЫЕ ТОВАРЫ корзины
-//    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /**
+     * Method generating <b>order</b>.
+     * Then it cleaning user cart and modify amount of products in catalog
+     */
     public NewOrder createOrder(OrderDTO orderDTO, HttpServletRequest request) {
         List<NewCart> userCart = newCartService.findUserCart(orderDTO.getProducts(), request);
         NewOrder newOrder = new NewOrder();
@@ -53,7 +45,7 @@ public class NewOrderService {
         newOrder.setUserId(userService.findUser(request).get().getId());
         List<String> productsInfo = new ArrayList<>();
         for (NewCart newCart : userCart) {
-            String infoAboutProduct = "Товар : " + newCart.getProduct().getName() +
+            String infoAboutProduct =newCart.getProduct().getName() +
                     ", количество: " + newCart.getAmount();
             productsInfo.add(infoAboutProduct);
         }
@@ -73,9 +65,14 @@ public class NewOrderService {
         return newOrderRepository.save(newOrder);
     }
 
+
+
     public List<NewOrder> getOrders(HttpServletRequest request) {
-        //Pageable pageable = PageRequest.of(0,4, Sort.by("date")); // не забыть передавать номера страниц
         return newOrderRepository.findAllByUserId(userService.findUser(request).get().getId());
+    }
+
+    public List<NewOrder> getAllUserOrders() {
+        return newOrderRepository.findAll();
     }
 
     public Optional<NewOrder> modifyOrderStatus(OrderStatusDTO orderStatusDTO) {
@@ -87,7 +84,31 @@ public class NewOrderService {
                 });
     }
 
-    public Optional<NewOrder> getOrder(UUID id) {
-        return newOrderRepository.findByOrderId(id);
+
+    /**
+     * Method canceling <b>order</b> and returning amount of ordered products in catalog
+     */
+    public Optional<Boolean> cancelOrder(UUID id, HttpServletRequest request) {
+        Optional<NewOrder> result = newOrderRepository.findByOrderId(id);
+        List<String> productsInfo = result.get().getProductsInfo();
+        for (int i = 0; i < productsInfo.size(); i++) {
+            int amount = Integer.parseInt(productsInfo.get(i).replaceAll("\\D+",""));
+            String[] arr = productsInfo.get(i).split(",");
+            String product = arr[0];
+            productService.addAmountToProduct(product, amount);
+        }
+        return result.map(canceledOrder -> {
+            newOrderRepository.deleteByOrderIdAndUserId(id,
+                    userService.findUser(request).get().getId());
+            return true;
+        });
+    }
+
+    public Optional<NewOrder> confirmReceipt(UUID id) {
+        Optional<NewOrder> result = newOrderRepository.findByOrderId(id);
+        return result.map(entity ->{
+            entity.setOrderStatus("Завершен");
+            return newOrderRepository.save(entity);
+        });
     }
 }

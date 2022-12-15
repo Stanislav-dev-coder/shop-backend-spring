@@ -4,7 +4,6 @@ import com.nikitalipatov.handmadeshop.core.models.*;
 import com.nikitalipatov.handmadeshop.core.repositories.CommentsRepository;
 import com.nikitalipatov.handmadeshop.core.repositories.NewCartRepository;
 import com.nikitalipatov.handmadeshop.core.repositories.ProductRepository;
-import com.nikitalipatov.handmadeshop.dto.ProductEditingDTO;
 import com.nikitalipatov.handmadeshop.dto.ProductCreationDTO;
 import com.nikitalipatov.handmadeshop.dto.ProductFilterDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -78,10 +76,6 @@ public class ProductService {
 
     public List<Product> getPopularProducts() {
         return productRepository.findTop4ByRatingGreaterThanEqual(4.0);
-//        for (int i = 0; i < products.size() - 2; i++) {
-//            products.remove(i);
-//        }
-//        return pr.subList(pr.size() - 4, pr.size());
     }
 
     public List<Product> getNewProducts() {
@@ -161,6 +155,18 @@ public class ProductService {
             result.get().setAmount(newAmount);
             productRepository.save(result.get());
         }
+    }
+
+    public Optional<Product> findProductByName(String name) {
+        return Optional.ofNullable(productRepository.findByName(name));
+    }
+
+    public Optional<Product> addAmountToProduct(String name, int amount) {
+        Optional<Product> result = findProductByName(name);
+        return result.map(entiy ->{
+            entiy.setAmount(result.get().getAmount() + amount);
+            return productRepository.save(entiy);
+        });
     }
 
     public void calculateRating(UUID id) {

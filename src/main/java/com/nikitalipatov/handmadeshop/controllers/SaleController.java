@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,23 +29,8 @@ public class SaleController {
         this.saleService = saleService;
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Sale> getSale(@PathVariable(name = "id")UUID id) {
-        Optional<Sale> result = saleService.getSale(id);
-        return result
-                .map(e -> ResponseEntity.ok(e))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/get/{name}")
-    public ResponseEntity<Sale> getSale(@PathVariable(name = "name")String name) {
-        Optional<Sale> result = saleService.getSaleByName(name);
-        return result
-                .map(e -> ResponseEntity.ok(e))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @PostMapping("/add")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Sale> createSale(@RequestParam(name = "name") String name,
                                            @RequestParam(name = "image") MultipartFile image,
                                            @RequestParam(name = "date") String date,
@@ -62,6 +48,7 @@ public class SaleController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete/{id}")
         public ResponseEntity<?> deleteSale(@PathVariable(name = "id")UUID saleId) {
         Optional<Boolean> result = saleService.deleteSaleManually(saleId);
@@ -70,6 +57,7 @@ public class SaleController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/modify/{id}")
     public ResponseEntity<Sale> modifySale(@PathVariable(name = "id") UUID id,
                                            @RequestParam(name = "name") String name,
@@ -80,7 +68,6 @@ public class SaleController {
                                            @RequestParam(required = false, name = "products") String[] products) {
         SaleDTO saleDTO = new SaleDTO(name, image, date, expirationDate, discount,products);
         Optional<Sale> result = saleService.modifySale(id, saleDTO);
-        //saleService.addSaleToProduct(result.get(), saleDTO);
         return result
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

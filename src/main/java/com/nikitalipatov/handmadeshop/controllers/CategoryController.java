@@ -6,6 +6,7 @@ import com.nikitalipatov.handmadeshop.dto.CategoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,11 +35,8 @@ public class CategoryController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Optional<Category>> getCategory(@PathVariable(name = "id")UUID id) {
-        return ResponseEntity.ok(categoryService.getCategory(id));
-    }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/add")
     public ResponseEntity<Category> addNewCategory(@RequestParam("name") String name,
                                                    @RequestParam("image")MultipartFile image) throws IOException {
@@ -48,6 +46,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> deleteCategory(@PathVariable(name = "id") UUID id) {
         Optional<Boolean> result = categoryService.deleteCategory(id);
         return result
@@ -56,6 +55,7 @@ public class CategoryController {
     }
 
     @PutMapping("/modify/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Category> editCategory(@PathVariable(name = "id")UUID id,
                                                  @RequestParam(required = false, name = "name") String name,
                                                  @RequestParam(required = false, name = "image")MultipartFile image) {

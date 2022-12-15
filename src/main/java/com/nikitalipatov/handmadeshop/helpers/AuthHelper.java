@@ -1,8 +1,12 @@
 package com.nikitalipatov.handmadeshop.helpers;
 
 import io.jsonwebtoken.Jwts;
-
 import javax.servlet.http.HttpServletRequest;
+
+/**
+ * Helper Class to get user name from request
+ * @see com.nikitalipatov.handmadeshop.core.services.UserService
+ */
 
 public final class AuthHelper {
 

@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.ParseException;
@@ -24,6 +23,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Service class for manipulation with <B>deals</B>.
+ * In addition to performing REST operations, allows to delete deal automatically by schedule
+ */
 
 @Service
 @Transactional
@@ -52,6 +55,10 @@ public class SaleService {
         saleRepository.deleteAllByExpirationDateBefore(new Date());
     }
 
+    /**
+     * Method creates a <b>sale</b> and set it to products
+     * @see Product
+     */
     @SneakyThrows
     public Sale createSale(SaleDTO saleDTO) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -88,6 +95,9 @@ public class SaleService {
                 });
     }
 
+    /**
+     * Main purpose of this method to edit <b>sale</b> and all it products
+     */
     public Optional<Sale> modifySale(UUID id, SaleDTO saleDTO) {
         Optional<Sale> result = saleRepository.findById(id);
         productService.disableSaleManually(result.get().getName());
@@ -115,13 +125,5 @@ public class SaleService {
                     }
                     return saleRepository.save(e);
                 });
-    }
-
-    public Optional<Sale> getSale(UUID id) {
-        return saleRepository.findById(id);
-    }
-
-    public Optional<Sale> getSaleByName(String name) {
-        return saleRepository.findByName(name);
     }
 }

@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface NewOrderRepository extends JpaRepository<NewOrder, UUID> {
     List<NewOrder> findAllByUserId(Long userId);
     Optional<NewOrder> findByOrderId(UUID orderId);
+    Optional<NewOrder> deleteByOrderIdAndUserId(UUID orderId, Long userId);
 }

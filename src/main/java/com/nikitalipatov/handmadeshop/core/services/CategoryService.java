@@ -6,11 +6,9 @@ import com.nikitalipatov.handmadeshop.core.models.Product;
 import com.nikitalipatov.handmadeshop.core.repositories.CategoryRepository;
 import com.nikitalipatov.handmadeshop.core.repositories.ProductRepository;
 import com.nikitalipatov.handmadeshop.dto.CategoryDTO;
-import com.nikitalipatov.handmadeshop.helpers.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
@@ -31,10 +29,6 @@ public class CategoryService {
 
     public Set<Category> getCategoriesSet() {
         return new HashSet<>(categoryRepository.findAll());
-    }
-
-    public Optional<Category> getCategory(UUID id) {
-        return categoryRepository.findById(id);
     }
 
     public Category addNewCategory(CategoryDTO categoryDTO) throws IOException {

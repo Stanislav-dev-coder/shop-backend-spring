@@ -5,9 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * Helper Class to calculate user cart data such as <b>number of products in cart, cart summary price and discount</b>
+ */
 
 @Getter
 @Setter
